@@ -96,6 +96,8 @@ class Tool(Enum):
     QWEN = "qwen"
     ZED = "zed"
     FACTORY_DROID = "factory-droid"
+    WORKBUDDY = "workbuddy"
+    DEEPSEEK_HARNESS = "deepseek-harness"
 
 
 class Role(Enum):

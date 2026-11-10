@@ -24,6 +24,8 @@ CANONICAL_TOOLS = {
     "qwen",
     "zed",
     "factory-droid",
+    "workbuddy",
+    "deepseek-harness",
 }
 
 
@@ -76,6 +78,12 @@ TOOL_ALIASES = {
     "factory-droid": "factory-droid",
     "droid": "factory-droid",
     "factory": "factory-droid",
+    "workbuddy": "workbuddy",
+    "codebuddy": "workbuddy",
+    "wb": "workbuddy",
+    "deepseek-harness": "deepseek-harness",
+    "dsh": "deepseek-harness",
+    "deepseek": "deepseek-harness",
 }
 
 

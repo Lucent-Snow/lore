@@ -10,6 +10,7 @@ from .commandcode import CommandCodeExtractor
 from .copilot import CopilotCLIExtractor
 from .crush import CrushExtractor
 from .cursor import CursorExtractor
+from .deepseek_harness import DeepSeekHarnessExtractor
 from .factory_droid import FactoryDroidExtractor
 from .gemini import GeminiCLIExtractor
 from .goose import GooseExtractor
@@ -20,6 +21,7 @@ from .pi import PiExtractor
 from .qwen import QwenExtractor
 from .visual_studio import VisualStudioCopilotExtractor
 from .vscode import VSCodeCopilotExtractor
+from .workbuddy import WorkBuddyExtractor
 from .zed import ZedExtractor
 
 
@@ -47,4 +49,6 @@ def get_all_extractors() -> List[BaseExtractor]:
         QwenExtractor(),
         ZedExtractor(),
         FactoryDroidExtractor(),
+        WorkBuddyExtractor(),
+        DeepSeekHarnessExtractor(),
     ]

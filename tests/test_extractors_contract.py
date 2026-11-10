@@ -3,7 +3,9 @@ import json
 from lore.core.models import Role, Tool
 from lore.extractors.claude import ClaudeCodeExtractor
 from lore.extractors.codex import CodexExtractor
+from lore.extractors.deepseek_harness import DeepSeekHarnessExtractor
 from lore.extractors.gemini import GeminiCLIExtractor
+from lore.extractors.workbuddy import WorkBuddyExtractor
 
 
 def test_claude_parse_session_contract(tmp_path):
@@ -125,3 +127,63 @@ def test_codex_parse_session_contract_with_malformed_lines(tmp_path):
     assert session.session_id == "ses_codex_1"
     assert len(session.messages) == 1
     assert session.messages[0].role == Role.USER
+
+
+def test_workbuddy_parse_session_contract(tmp_path):
+    projects_dir = tmp_path / "projects"
+    slug_dir = projects_dir / "Users-test-wb"
+    slug_dir.mkdir(parents=True)
+    session_file = slug_dir / "wb_ses_1.jsonl"
+    records = [
+        {"type": "session-meta", "sessionId": "wb_ses_1", "cwd": "/repo/project"},
+        {"type": "ai-title", "aiTitle": "Fix WorkBuddy issue"},
+        {
+            "type": "message",
+            "role": "user",
+            "content": [{"type": "input_text", "text": "<user_query>Hello from user</user_query>"}],
+        },
+        {
+            "type": "message",
+            "role": "assistant",
+            "content": [{"type": "output_text", "text": "Hello! How can I help?"}],
+        },
+    ]
+    session_file.write_text("\n".join(json.dumps(r) for r in records), encoding="utf-8")
+    extractor = WorkBuddyExtractor(projects_dir=projects_dir)
+    session = extractor._parse_jsonl_file(session_file, {})
+    assert session.tool == Tool.WORKBUDDY
+    assert session.session_id == "wb_ses_1"
+    assert session.title == "Fix WorkBuddy issue"
+    assert len(session.messages) == 2
+    assert session.messages[0].role == Role.USER
+    assert session.messages[0].content == "Hello from user"
+    assert session.messages[1].role == Role.ASSISTANT
+
+
+def test_deepseek_harness_parse_session_contract(tmp_path):
+    sessions_root = tmp_path / "sessions"
+    session_dir = sessions_root / "--repo-project--" / "dsh_ses_1"
+    session_dir.mkdir(parents=True)
+    session_file = session_dir / "session.jsonl"
+    records = [
+        {"type": "session", "id": "dsh_ses_1", "cwd": "/repo/project"},
+        {"type": "session/title", "data": {"title": "DSH test title"}},
+        {
+            "type": "user/message",
+            "data": {"content": [{"type": "text", "text": "Run DSH task"}]},
+        },
+        {
+            "type": "assistant/message",
+            "data": {"message": {"content": [{"type": "text", "text": "DSH task completed."}]}},
+        },
+    ]
+    session_file.write_text("\n".join(json.dumps(r) for r in records), encoding="utf-8")
+    extractor = DeepSeekHarnessExtractor(base_paths=[sessions_root])
+    session = extractor._parse_session_file(session_file)
+    assert session.tool == Tool.DEEPSEEK_HARNESS
+    assert session.session_id == "dsh_ses_1"
+    assert session.title == "DSH test title"
+    assert len(session.messages) == 2
+    assert session.messages[0].role == Role.USER
+    assert session.messages[0].content == "Run DSH task"
+    assert session.messages[1].role == Role.ASSISTANT
